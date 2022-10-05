@@ -31,6 +31,8 @@ import androidx.core.content.PermissionChecker
 import androidx.core.view.isVisible
 import com.app.mycamapp.databinding.ActivityMainBinding
 import com.app.mycamapp.databinding.ActivityMainBinding.inflate
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,6 +41,12 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
     private lateinit var viewBinding: ActivityMainBinding
     lateinit var textView: TextView
+    private lateinit var id:String
+    private lateinit var database : DatabaseReference
+    private lateinit var nid:String
+    private lateinit var name:String
+    private lateinit var age:String
+    private lateinit var gender:String
 
     private var videoCapture:VideoCapture<Recorder>? = null
     private var recording: Recording? = null
@@ -51,6 +59,10 @@ class MainActivity : AppCompatActivity() {
         viewBinding.pause.isVisible=false
         viewBinding.stopbtn.isVisible=false
         setContentView(viewBinding.root)
+        nid=intent.getStringExtra("nid").toString()
+        name=intent.getStringExtra("name").toString()
+        age=intent.getStringExtra("age").toString()
+        gender=intent.getStringExtra("gender").toString()
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -160,10 +172,8 @@ class MainActivity : AppCompatActivity() {
 
 
             // create and start a new recording session
-            val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                .format(System.currentTimeMillis())
             val contentValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                put(MediaStore.MediaColumns.DISPLAY_NAME, nid.plus("_").plus(name).plus("_").plus(age))
                 put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                     put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/CameraX-Video")
