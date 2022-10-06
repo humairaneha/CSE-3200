@@ -1,8 +1,10 @@
 package com.app.mycamapp
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.hardware.camera2.CaptureRequest
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -18,9 +20,12 @@ import java.util.concurrent.Executors
 import android.widget.Toast
 import androidx.camera.lifecycle.ProcessCameraProvider
 import android.util.Log
+import android.util.Range
+import android.util.Size
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.TextView
+import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.core.*
 import androidx.camera.video.FallbackStrategy
 import androidx.camera.video.MediaStoreOutputOptions
@@ -246,20 +251,35 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @SuppressLint("UnsafeOptInUsageError", "ResourceAsColor")
     private fun startCamera() {
+        viewBinding.flash.isChecked=false
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener(Runnable {
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder()
-                .build()
+                        val preview = Preview.Builder().apply {
+                setTargetResolution(Size(1080,1920))
+
+            }
+            val exti = Camera2Interop.Extender(preview)
+                .setCaptureRequestOption(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF)
+                  .setCaptureRequestOption(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF)
+                //.setCaptureRequestOption(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF)
+//                .setCaptureRequestOption(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_OFF)
+//                .setCaptureRequestOption(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH)
+                 .setCaptureRequestOption(CaptureRequest.SENSOR_SENSITIVITY,100)
+                          .setCaptureRequestOption(CaptureRequest.SENSOR_FRAME_DURATION,16666666)
+                        .setCaptureRequestOption(CaptureRequest.SENSOR_EXPOSURE_TIME, 20400000)
+
+            val p = preview.build()
                 .also {
                     it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
                 }
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             val recorder = Recorder.Builder()
-                .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
+                .setQualitySelector(QualitySelector.from(Quality.FHD))
                 .build()
             videoCapture = VideoCapture.withOutput(recorder)
 
@@ -268,11 +288,45 @@ class MainActivity : AppCompatActivity() {
             try {
                 cameraProvider.unbindAll()
                 val camera = cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview,videoCapture)
+                    this, cameraSelector, p,videoCapture)
                 val cameraControl = camera.cameraControl
 // For querying information and states.
                 val cameraInfo = camera.cameraInfo
-                cameraControl.enableTorch(true);
+                camera.cameraControl.enableTorch(false)
+                viewBinding.flash.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) {
+                        // The toggle is enabled
+                        cameraControl.enableTorch(true);
+
+                    } else {
+                        // The toggle is disabled
+                        cameraControl.enableTorch(false);
+                    }
+                }
+
+                viewBinding.f30.setOnClickListener{
+                    viewBinding.f30.apply {
+                        setTextColor(R.color.white)
+                    }
+                    viewBinding.f60.apply {
+                        setTextColor(R.color.black)
+                    }
+
+                    cameraControl.enableTorch(false);
+                    startCamera();
+                }
+                viewBinding.f60.setOnClickListener{
+                    viewBinding.f30.apply {
+                        setTextColor(R.color.black)
+                    }
+                    viewBinding.f60.apply {
+                        setTextColor(R.color.white)
+                    }
+                    cameraControl.enableTorch(false);
+                startCameraatf60();
+
+                }
+
 
             }
             catch(exc: Exception) {
@@ -280,7 +334,75 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
 
     }
-override fun onDestroy() {
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun startCameraatf60() {
+        viewBinding.flash.isChecked=false
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener(Runnable {
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().apply {
+                setTargetResolution(Size(1080,1920))
+
+            }
+            val exti = Camera2Interop.Extender(preview)
+                .setCaptureRequestOption(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_USE_SCENE_MODE)
+
+                .setCaptureRequestOption(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(60,60))
+            val s = preview.build()
+                .also {
+                    it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
+                }
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            val recorder = Recorder.Builder()
+                .setQualitySelector(QualitySelector.from(Quality.FHD))
+                .build()
+            videoCapture = VideoCapture.withOutput(recorder)
+
+
+// For querying information and states.
+            try {
+                cameraProvider.unbindAll()
+                val camera = cameraProvider.bindToLifecycle(
+                    this, cameraSelector, s,videoCapture)
+                val cameraControl = camera.cameraControl
+// For querying information and states.
+                val cameraInfo = camera.cameraInfo
+                viewBinding.flash.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) {
+                        // The toggle is enabled
+                        cameraControl.enableTorch(true);
+
+                    } else {
+                        // The toggle is disabled
+                        cameraControl.enableTorch(false);
+                    }
+                }
+
+                viewBinding.f30.setOnClickListener{
+                    cameraControl.enableTorch(false);
+                    startCamera();
+                }
+                viewBinding.f60.setOnClickListener{
+                    cameraControl.enableTorch(false);
+                    startCameraatf60();
+
+                }
+
+
+            }
+            catch(exc: Exception) {
+                Log.e(TAG, "Use case binding failed", exc)}
+        }, ContextCompat.getMainExecutor(this))
+
+
+
+
+    }
+
+    override fun onDestroy() {
     super.onDestroy()
     cameraExecutor.shutdown()
 }

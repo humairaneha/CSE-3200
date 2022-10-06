@@ -86,8 +86,57 @@
         android:text=""
         android:textColor="@color/white"
         android:textSize="20dp"
-        tools:layout_editor_absoluteX="19dp"
-        tools:layout_editor_absoluteY="691dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.12"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.04000002" />
+
+    <Button
+        android:id="@+id/f30"
+        android:layout_width="50dp"
+        android:layout_height="44dp"
+        android:layout_marginBottom="94dp"
+        android:backgroundTint="#9C0707"
+        android:text="30"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.94"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.13" />
+
+    <Button
+        android:id="@+id/f60"
+        android:layout_width="50dp"
+        android:layout_height="44dp"
+        android:layout_marginBottom="94dp"
+        android:backgroundTint="#9C0707"
+        android:text="60"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.94"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.19999999" />
+
+    <ToggleButton
+        android:id="@+id/flash"
+        android:layout_width="80dp"
+        android:layout_height="42dp"
+        android:button="@drawable/ic_baseline_flash_on_24"
+        android:buttonTint="#120F0F"
+        android:checked="false"
+        android:text="ToggleButton"
+        app:layout_constraintBottom_toTopOf="@+id/f30"
+        app:layout_constraintEnd_toEndOf="@+id/f30"
+        app:layout_constraintHorizontal_bias="0.74"
+        app:layout_constraintStart_toStartOf="@+id/f30"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.9" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
